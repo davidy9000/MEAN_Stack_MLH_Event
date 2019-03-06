@@ -32,7 +32,17 @@ export class AppComponent {
       imageUrl: imageUrl,
     };
 
-		// add FaceModel type here
+type FaceModel = {
+		faceRectangle: {
+			height: number,
+			width: number,
+			left: number,
+			top: number,
+		},
+		faceAttributes:{
+			emotion: object;
+		},
+};
 
 		this.htmlToAdd = ''
 		this.http.post(`${this.uri}`, obj).subscribe((res:any) => {
@@ -40,23 +50,25 @@ export class AppComponent {
         this.htmlToAdd += `<span style="color: red;">${res.error.message}</span>`;
         return;
       }
-			// res.forEach((face:FaceModel) => {
-			// 	const { faceRectangle, faceAttributes } = face;
-			// 	const { height, width, left, top } = faceRectangle;
-			//
-			// 	// Add image to website here
-			//
-			// 	const { emotion } = faceAttributes;
-			// 	let mainEmotion = undefined;
-			//
-			// 	Object.keys(emotion).forEach(key => {
-			// 		if(!mainEmotion || emotion[key] > emotion[mainEmotion]) {
-			// 			mainEmotion = key
-			// 		}
-			// 	});
-			//
-			// 	// Add emoji to image here
-			// })
+			res.forEach((face:FaceModel) => {
+				const { faceRectangle, faceAttributes } = face;
+				const { height, width, left, top } = faceRectangle;
+			
+				// Add image to website here
+				const style = `position:absolute; height:${height}px; width:${width}px; left:${left}px; top:${top}px`
+				this.imageUrl = imageUrl;
+			
+				const { emotion } = faceAttributes;
+				let mainEmotion = undefined;
+			
+				Object.keys(emotion).forEach(key => {
+					if(!mainEmotion || emotion[key] > emotion[mainEmotion]) {
+						mainEmotion = key
+					}
+				});
+			
+				this.htmlToAdd += `<img class="emoji" style="${style}" src="/assets/${mainEmotion}.png"/>`
+			})
 		});
 	}
 }

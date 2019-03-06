@@ -15,10 +15,10 @@ app.use(cors({
 }))
 
 // When you sign up for the Face API, your region might be different. Be sure to replace eastus with the correct region.
-const uriBase = 'https://eastus.api.cognitive.microsoft.com/face/v1.0/detect/';
+const uriBase = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/detect/';
 
 // When you sign up for the Face API, you'll be given a subscription key. Paste that between the quotation marks below.
-const subscriptionKey = '';
+const subscriptionKey = 'e08d831e1f26439d97cbf0b893de96c0';
 
 const port = process.env.PORT || 3000
 
@@ -41,8 +41,28 @@ app.post('/', (req, res) => {
     }
   };
 
-  // add request here
-  
+request.post(options, (error, response, body) => {
+    console.log(body)
+    res.setHeader('Content-Type', 'application/json');
+    res.send(body)
+
+  if (response.statusCode == "200") {
+
+    MongoClient.connect(mongoURL, function(err, db){
+      if(err) throw err;
+      var dbo = db.db(dbName);
+      dbo.createCollection("faces");
+      var myobjFace = { imageUrl: imageUrl, faceAttributes: JSON.stringify(body) };
+      dbo.collection("faces").insertOne(myobjFace, function(err, res) {
+        if (err) throw err;
+        console.log("1 register inserted");
+        db.close();
+      });
+    })
+  }
 })
+
+})
+
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
